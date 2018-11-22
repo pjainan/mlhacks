@@ -1,0 +1,7 @@
+This is practice AV hackathon: https://datahack.analyticsvidhya.com/contest/practice-problem-identify-the-apparels/#
+The title of the Hack is "Identify the Apparels" 
+The short name for the hack solution in the repo is "AV01-ITA"
+
+if __name__ == '__main__': 
+    storeData() 
+    loadData() 

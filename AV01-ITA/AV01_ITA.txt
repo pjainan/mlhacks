@@ -5,3 +5,4 @@ The short name for the hack solution in the repo is "AV01-ITA"
 if __name__ == '__main__': 
     storeData() 
     loadData() 
+    https://www.geeksforgeeks.org/understanding-python-pickling-example/

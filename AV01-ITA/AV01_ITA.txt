@@ -2,7 +2,6 @@ This is practice AV hackathon: https://datahack.analyticsvidhya.com/contest/prac
 The title of the Hack is "Identify the Apparels" 
 The short name for the hack solution in the repo is "AV01-ITA"
 
-if __name__ == '__main__': 
-    storeData() 
-    loadData() 
-    https://www.geeksforgeeks.org/understanding-python-pickling-example/
+
+Pickle: https://www.geeksforgeeks.org/understanding-python-pickling-example/
+os.walk() : https://www.bogotobogo.com/python/python_traversing_directory_tree_recursively_os_walk.php

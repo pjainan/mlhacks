@@ -27,12 +27,11 @@ class DataHelper:
         pickle.dump(self.__pickle_obj, picklefileobj)
         picklefileobj.close()
 
-    def pickle_extract(self):
+    def pickle_extract(self, key):
         picklefileobj = open(ops.abspath(self.__datafolder+"proj.pickle"), 'rb')
         __unpickle_obj = pickle.load(picklefileobj)
-        for keys in __unpickle_obj:
-            print(keys)
         picklefileobj.close()
+        return __unpickle_obj[key]
 
     def __read_data(self, mode, path):
         rd = pd.read_csv(path)
@@ -103,3 +102,4 @@ class DataHelper:
         picklefileobj.close()
         for key in __unpickle_obj.keys():
             print("key: " + key + " has following shape : " + str(np.array(__unpickle_obj[key]).shape))
+        return __unpickle_obj

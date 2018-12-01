@@ -1,12 +1,12 @@
-import dataprocessing as dp
+import model_design
+import sys
 
-def ProcessData():
-    dh = dp.DataHelper()
-    dh.fill_arrays('test')
-    dh.fill_arrays('train')
-    dh.get_data('train')
-    dh.get_data('test')
-    dh.show_pickle()
+
     
 if __name__ == '__main__':
-    ProcessData()
+    #read command line arguments
+    args = sys.argv[1:]
+    model = model_design.Model(args[0])
+    
+    
+

@@ -42,31 +42,17 @@ class DataHelper:
         data = self.__read_data(mode,ops.abspath(self.__datafolder+mode+self.__file_ext))
         return data
 
-    def fill_arrays(self, mode):
+    def fill_arrays(self, mode, start_index, end_index):
         imgs = []
         image_folder = ops.abspath(self.__datafolder+mode+"/")
         for dirpath, dirs, images in os.walk(image_folder):
-            for img in images:
-                imgs.append(np.array(imread(ops.join(image_folder, img))[:,:,0]))
-            print("captured images data : " + mode)
+            for img in range(start_index,end_index+1):
+                # imgs.append(np.array(imread(ops.join(image_folder, img))[:,:,0]))
+                # im = np.array(imread(ops.join(image_folder, img),as_gray=True))
+                im = np.array(imread(ops.join(image_folder, str(img)+".png")))
+                imgs.append(im)
             self.pickle_modify(mode+"_images",imgs)
-    
-    # def temp_fill_arrays(self, mode):
-    #     imgs = []
-    #     image_folder = ops.abspath(self.__datafolder+mode+"/")
-    #     count = 0 
-    #     for dirpath, dirs, images in os.walk(image_folder):
-    #         for img in images:
-    #             count += 1
-    #             if(count<2):
-    #                 print(image_folder)
-    #                 print(ops.join(image_folder, img))
-    #                 imgs.append(np.array(imread(ops.join(image_folder, img))[:,:,0]))
-    #                 print(ops.join(image_folder, img))
-    #                 print(imgs[0].shape)
-    #                 plt.imshow(imgs[0], cmap="binary")
-    #                 plt.show(block=True)
-    #         print("captured images data : " + mode)
+
 
     #extract a particular object from the pickle file.                            
     def pickle_extract_key(self, extract_key):        

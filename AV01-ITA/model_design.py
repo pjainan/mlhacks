@@ -24,8 +24,8 @@ class Model:
     _classes = {0: 'T-shirt/top', 1: 'Trouser', 2: 'Pullover', 3: 'Dress', 4: 'Coat',5: 'Sandal', 6: 'Shirt', 7: 'Sneaker', 8: 'Bag', 9: 'Ankle boot'}
     _num_classes = len(_classes)
 
-    _batch_size = 256
-    _epochs = 1
+    _batch_size = 128
+    _epochs = 10
     _histories = []
     total_iterations = 1
 
@@ -79,24 +79,25 @@ class Model:
         model.add(keras.layers.InputLayer(input_shape=(28,28,4)))
         model.add(keras.layers.BatchNormalization())
 
-        model.add(keras.layers.convolutional.Conv2D(filters=8, kernel_size = 4, data_format='channels_last',  padding='same',  activation='relu')) 
+        model.add(keras.layers.convolutional.Conv2D(filters=24, kernel_size = 3, data_format='channels_last',  padding='same',  activation='relu')) 
         model.add(keras.layers.MaxPooling2D(pool_size=2))
-        model.add(keras.layers.Dropout(0.2))
+        model.add(keras.layers.Dropout(0.3))
         
-        # model.add(keras.layers.Conv2D(filters=32, kernel_size = 4, padding='valid', activation='relu'))
-        # model.add(keras.layers.MaxPooling2D(pool_size=2))
-        # model.add(keras.layers.Dropout(0.3))
+        model.add(keras.layers.Conv2D(filters=64, kernel_size = 3, padding='same', activation='relu'))
+        model.add(keras.layers.MaxPooling2D(pool_size=2))
+        model.add(keras.layers.Dropout(0.4))
 
-        # model.add(keras.layers.Conv2D(filters=64, kernel_size=4, padding='valid', activation='relu'))
-        # model.add(keras.layers.MaxPooling2D(pool_size=2))
-        # model.add(keras.layers.Dropout(0.5))
+        #model.add(keras.layers.Conv2D(filters=64, kernel_size=3, padding='same', activation='relu'))
+        #model.add(keras.layers.MaxPooling2D(pool_size=2))
+        #model.add(keras.layers.Dropout(0.3))
 
         model.add(keras.layers.Flatten())
         
-        # model.add(keras.layers.Dense(128, activation='relu'))
-        # model.add(keras.layers.Dropout(0.7))
+        model.add(keras.layers.Dense(128, activation='relu'))
+        model.add(keras.layers.Dropout(0.5))
         
-        model.add(keras.layers.Dense(8, activation='relu'))
+        model.add(keras.layers.Dense(128, activation='relu'))
+
         model.add(keras.layers.BatchNormalization())
 
         model.add(keras.layers.Dense(10, activation='softmax'))
@@ -118,7 +119,7 @@ class Model:
             hist = mo.fit(train_x,train_y, epochs=self._epochs, batch_size=self._batch_size, validation_data=(val_x, val_y), callbacks=[checkpoint])
             self._histories.append(hist)
 
-        with open('/data/mo_hist/fashion_mnist-history.pkl', 'wb') as f:
+        with open('./data/mo_hist/fashion_mnist-history.pkl', 'wb') as f:
             pickle.dump(self._histories, f)    
         # # Evaluate the model on test set
         # score = mo.evaluate(self.test_data, self.test_labels, verbose=0)

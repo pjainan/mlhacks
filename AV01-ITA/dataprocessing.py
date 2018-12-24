@@ -73,10 +73,13 @@ class DataHelper:
     def pickle_modify(self, extract_key, new_obj):
         __unpickle_obj = dict()
         picklefileobj = open(ops.abspath(self.__datafolder+"proj.pickle"), 'rb')
-        __unpickle_obj  = pickle.load(picklefileobj)
-        picklefileobj.close()
+        try:
+            __unpickle_obj  = pickle.load(picklefileobj)
+            open(ops.abspath(self.__datafolder+"proj.pickle"), 'w').close()
+            picklefileobj.close()
+        except EOFError as error:
+            print("return empty pickle")
         #clear content of the files
-        open(ops.abspath(self.__datafolder+"proj.pickle"), 'w').close()
         if extract_key in __unpickle_obj.keys():
             #update the object contents
             __unpickle_obj[extract_key] = new_obj
@@ -88,12 +91,15 @@ class DataHelper:
         pickle.dump(__unpickle_obj, picklefileobj)
         #close the file
         picklefileobj.close()
-        
+
     def show_pickle(self):
         __unpickle_obj = dict()
-        picklefileobj = open(ops.abspath(self.__datafolder+"proj.pickle"), 'rb')
-        __unpickle_obj  = pickle.load(picklefileobj)
-        picklefileobj.close()
+        try:
+            picklefileobj = open(ops.abspath(self.__datafolder+"proj.pickle"), 'rb')
+            __unpickle_obj  = pickle.load(picklefileobj)
+            picklefileobj.close()
+        except EOFError as error:
+            print("return empty shw_pickle")
         for key in __unpickle_obj.keys():
             print("key: " + key + " has following shape : " + str(np.array(__unpickle_obj[key]).shape))
         return __unpickle_obj

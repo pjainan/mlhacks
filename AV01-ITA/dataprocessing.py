@@ -30,6 +30,10 @@ class DataHelper:
         fileobj.close()
         return file_path
 
+    def get_iteration_model_file(self, model_prefix, iteration):
+        file_path = ops.abspath(self.__modelfolder + model_prefix+'_'+str(iteration)+".hdf5")
+        return file_path
+
     def pickle_dump(self):
         picklefileobj = open(ops.abspath(self.__datafolder+"proj.pickle"), 'ab')
         pickle.dump(self.__pickle_obj, picklefileobj)

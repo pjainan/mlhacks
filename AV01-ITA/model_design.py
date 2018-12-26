@@ -25,9 +25,11 @@ class Model:
     _num_classes = len(_classes)
 
     _batch_size = 128
-    _epochs = 10
+    _epochs = 40
     _histories = []
     total_iterations = 1
+
+    history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
 
     _model = keras.Sequential()
     
@@ -39,6 +41,10 @@ class Model:
         elif data_processing_mode == "0":
             self.Format_Data()
             self.Train_The_Model()
+        elif data_processing_mode == "2":
+        # Mode to evaluate model on validation and test data set
+            self.Evaluate_on_Train()
+            self.Evaluate_on_Test()
         else:
             print("Mention correct commandline parameter.")
             
@@ -114,19 +120,36 @@ class Model:
             print("Running for iteration: %i" % i)
             filepath = self.dh.generate_iteration_model_file("fmnist_mo1", str(i))
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
-            train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.15, random_state=1001)
+            train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.20, random_state=1001)
             
             hist = mo.fit(train_x,train_y, epochs=self._epochs, batch_size=self._batch_size, validation_data=(val_x, val_y), callbacks=[checkpoint])
             self._histories.append(hist)
 
-        with open('./data/mo_hist/fashion_mnist-history.pkl', 'wb') as f:
+        with open(history_pkl, 'wb') as f:
             pickle.dump(self._histories, f)    
-        # # Evaluate the model on test set
-        # score = mo.evaluate(self.test_data, self.test_labels, verbose=0)
-        # # Print test accuracy
-        # print('\n', 'Test accuracy:', score[1])
-        # # mo.predict
-        # # plt.imshow(self.train_data[1])
-        # # plt.show(block=True)
-        # # print(self.class_names[self.train_labels[1]])
-       
+
+    def Evaluate_on_Train(self):
+        self._histories = pickle.load(open(history_pkl, 'rb'))
+        print('Training: \t%0.8f loss / %0.8f acc' % (get_avg('loss'), get_avg('acc')))
+        print('Validation: \t%0.8f loss / %0.8f acc' % (get_avg('val_loss'), get_avg('val_acc')))
+
+    def Get_Training_History_Average(self,attrib):
+        tmp = []
+        for history in self._histories:
+           tmp.append(history[attrib][np.argmin(history['val_loss'])])
+        return np.mean(tmp)
+
+    def Evaluate_on_Test(self):
+        test_loss = []
+        test_accuracy = []
+        for i in range(0, self.total_iterations):
+            temp_cnn = self.ModelDefinition()
+            temp_cnn.load_weights(self.dh.get_iteration_model_file("fminst_mol1", str(i)))
+            score = temp_cnn.evaluate(self.test_data, self.test_labels, verbose = 0)
+            test_loss.append(score[0])
+            test_accuracy.append(score[1])
+            print("Test with mode %i: %0.4f loss / %0.4f accuracy " %(i, score[0], score[1]))
+        # plt.imshow(self.train_data[1])
+        # plt.show(block=True)
+        # print(self.class_names[self.train_labels[1]])
+        print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))

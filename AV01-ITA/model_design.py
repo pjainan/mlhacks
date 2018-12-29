@@ -25,13 +25,13 @@ class Model:
     _num_classes = len(_classes)
 
     _batch_size = 128
-    _epochs = 40
+    _epochs = 10
     _histories = []
-    total_iterations = 1
+    total_iterations = 5
 
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
 
-    _model = keras.Sequential()
+    #_model = keras.Sequential()
     
     
     def __init__(self, data_processing_mode):
@@ -43,6 +43,7 @@ class Model:
             self.Train_The_Model()
         elif data_processing_mode == "2":
         # Mode to evaluate model on validation and test data set
+            self.Format_Data()
             self.Evaluate_on_Train()
             self.Evaluate_on_Test()
         else:
@@ -76,12 +77,8 @@ class Model:
         self.test_data = self.train[50000:60000,:,:,:]
         self.test_labels = self.train_target[50000:60000]
 
-        print(self.test_data.shape)
-       
-
-
     def ModelDefinition(self):
-        model = self._model
+        model = keras.Sequential()
         model.add(keras.layers.InputLayer(input_shape=(28,28,4)))
         model.add(keras.layers.BatchNormalization())
 
@@ -112,30 +109,34 @@ class Model:
         return model
 
     def Train_The_Model(self):
-        mo = self.ModelDefinition()
-        print('Model Summary for the current for the processed model')
-        print(mo.summary())
-
+        histories = []
         for i in range(0, self.total_iterations):
+            mo = self.ModelDefinition()
+            print('Model Summary for the current for the processed model')
+            print(mo.summary())
+
+
             print("Running for iteration: %i" % i)
             filepath = self.dh.generate_iteration_model_file("fmnist_mo1", str(i))
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
             train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.20, random_state=1001)
             
             hist = mo.fit(train_x,train_y, epochs=self._epochs, batch_size=self._batch_size, validation_data=(val_x, val_y), callbacks=[checkpoint])
-            self._histories.append(hist)
+            histories.append(hist.history)
 
-        with open(history_pkl, 'wb') as f:
-            pickle.dump(self._histories, f)    
+        with open(self.history_pkl, 'wb') as f:
+            pickle.dump(histories, f)    
 
     def Evaluate_on_Train(self):
-        self._histories = pickle.load(open(history_pkl, 'rb'))
-        print('Training: \t%0.8f loss / %0.8f acc' % (get_avg('loss'), get_avg('acc')))
-        print('Validation: \t%0.8f loss / %0.8f acc' % (get_avg('val_loss'), get_avg('val_acc')))
+        fileobj = open(self.history_pkl,'rb')
+        histories = pickle.load(fileobj)
+        fileobj.close()
+        print('Training: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'loss'), self.Get_Training_History_Average(histories, 'acc')))
+        print('Validation: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'val_loss'), self.Get_Training_History_Average(histories, 'val_acc')))
 
-    def Get_Training_History_Average(self,attrib):
+    def Get_Training_History_Average(self,histories,attrib):
         tmp = []
-        for history in self._histories:
+        for history in histories:
            tmp.append(history[attrib][np.argmin(history['val_loss'])])
         return np.mean(tmp)
 
@@ -144,11 +145,11 @@ class Model:
         test_accuracy = []
         for i in range(0, self.total_iterations):
             temp_cnn = self.ModelDefinition()
-            temp_cnn.load_weights(self.dh.get_iteration_model_file("fminst_mol1", str(i)))
+            temp_cnn.load_weights(self.dh.get_iteration_model_file("fmnist_mo1", str(i)))
             score = temp_cnn.evaluate(self.test_data, self.test_labels, verbose = 0)
             test_loss.append(score[0])
             test_accuracy.append(score[1])
-            print("Test with mode %i: %0.4f loss / %0.4f accuracy " %(i, score[0], score[1]))
+            print("Test with mode %i: %0.8f loss / %0.8f accuracy " %(i, score[0], score[1]))
         # plt.imshow(self.train_data[1])
         # plt.show(block=True)
         # print(self.class_names[self.train_labels[1]])

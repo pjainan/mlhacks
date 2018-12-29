@@ -14,11 +14,12 @@ class DataHelper:
     __testfolder = "test"
     __trainfolder = "train"
     __trainfile = "train"
-    __trainfile = "test"
+    __testfile = "test"
     __file_ext = ".csv"
 
     __pickle_obj = {}
     __unpickle_obj = {}
+
 
     def __init__(self):
         pass
@@ -29,6 +30,11 @@ class DataHelper:
         fileobj = open(file_path,'wb')
         fileobj.close()
         return file_path
+    def load_predictions(self, predictions):
+        predDF = pd.DataFrame(self.get_data("test"))
+        predDF["Predictions"]=predictions
+        print(predDF.head(5))
+        predDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
 
     def get_iteration_model_file(self, model_prefix, iteration):
         file_path = ops.abspath(self.__modelfolder + model_prefix+'_'+str(iteration)+".hdf5")

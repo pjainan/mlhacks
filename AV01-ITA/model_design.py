@@ -31,9 +31,6 @@ class Model:
 
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
 
-    #_model = keras.Sequential()
-    
-    
     def __init__(self, data_processing_mode):
         if data_processing_mode == "1":
            self.ProcessData()
@@ -46,10 +43,12 @@ class Model:
             self.Format_Data()
             self.Evaluate_on_Train()
             self.Evaluate_on_Test()
+        elif data_processing_mode == "3":
+        # Mode to generate the predictions from the training and validations 
+            self.Estimate_the_Output()
         else:
             print("Mention correct commandline parameter.")
             
-    
     def ProcessData(self):
         self.dh.fill_arrays('test',60001,70000)
         self.dh.fill_arrays('train',1,60000)
@@ -65,8 +64,6 @@ class Model:
         # self.train_target = np.array(self.dh.pickle_extract("train_labels"))[:,1]
         self.train = self.train/255.0
         
-        self.test = np.array(self.dh.pickle_extract("test_images"))
-        self.test = self.test/255.0
 
         self.train_data = self.train[0:50000,:,:,:]
         self.train_labels = self.train_target[0:50000]
@@ -98,13 +95,10 @@ class Model:
         
         model.add(keras.layers.Dense(128, activation='relu'))
         model.add(keras.layers.Dropout(0.5))
-        
         model.add(keras.layers.Dense(128, activation='relu'))
-
         model.add(keras.layers.BatchNormalization())
 
         model.add(keras.layers.Dense(10, activation='softmax'))
-        
         model.compile(optimizer=keras.optimizers.Adam(), loss= keras.losses.categorical_crossentropy, metrics=['accuracy'])
         return model
 
@@ -114,8 +108,6 @@ class Model:
             mo = self.ModelDefinition()
             print('Model Summary for the current for the processed model')
             print(mo.summary())
-
-
             print("Running for iteration: %i" % i)
             filepath = self.dh.generate_iteration_model_file("fmnist_mo1", str(i))
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
@@ -154,3 +146,18 @@ class Model:
         # plt.show(block=True)
         # print(self.class_names[self.train_labels[1]])
         print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))
+
+    def Estimate_the_Output(self):
+        self.test = np.array(self.dh.pickle_extract("test_images"))
+        self.test = self.test/255.0
+        test_results = []
+        for i in range(0, self.total_iterations):
+            temp_cnn = self.ModelDefinition()
+            temp_cnn.load_weights(self.dh.get_iteration_model_file("fmnist_mo1", str(i)))
+            predictions = temp_cnn.predict(self.test, verbose=0)
+            predictions = np.argmax(predictions,axis=1)
+            test_results.append(predictions)
+        #counter = np.bincount(np.array(test_results), axis=0).argmax()
+        #print(np.array(test_results))
+        self.dh.load_predictions(test_results[0])
+            

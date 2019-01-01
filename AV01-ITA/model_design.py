@@ -25,10 +25,29 @@ class Model:
     _num_classes = len(_classes)
 
     _batch_size = 128
-    _epochs = 10
+    _epochs = 40
     _histories = []
-    total_iterations = 5
-
+    total_iterations = 1
+    _model_configs = {
+        "0":{
+            "batch_size" : 128,
+            "epochs": 10,
+            "iterations" : 1,
+            "layer1kernel" : 3,
+            "layer2kernel" :3,
+            "layer1pad" : "same",
+            "layer2pad" : "same",
+            "layer1filters":24,
+            "layer2filters":64,
+            "layer1pool":2,
+            "layer2pool":2,
+            "layer1dense":128,
+            "layer2dense":128,
+            "drop1":0.3,
+            "drop2":0.4,
+            "drop3":0.5
+        }
+    }
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
 
     def __init__(self, data_processing_mode):

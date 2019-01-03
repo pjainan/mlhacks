@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 import sklearn
 import pickle
 from sklearn.model_selection import train_test_split
+import model_configurations as mc
 
 class Model:
     dh = dp.DataHelper()
+    md = mc.ModelDefinition()
     data_store = []
     train = []
     test = [] 
@@ -28,26 +30,6 @@ class Model:
     _epochs = 40
     _histories = []
     total_iterations = 1
-    _model_configs = {
-        "0":{
-            "batch_size" : 128,
-            "epochs": 10,
-            "iterations" : 1,
-            "layer1kernel" : 3,
-            "layer2kernel" :3,
-            "layer1pad" : "same",
-            "layer2pad" : "same",
-            "layer1filters":24,
-            "layer2filters":64,
-            "layer1pool":2,
-            "layer2pool":2,
-            "layer1dense":128,
-            "layer2dense":128,
-            "drop1":0.3,
-            "drop2":0.4,
-            "drop3":0.5
-        }
-    }
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
 
     def __init__(self, data_processing_mode):
@@ -56,12 +38,11 @@ class Model:
            self.data_store = self.ShowDataStore()
         elif data_processing_mode == "0":
             self.Format_Data()
-            self.Train_The_Model()
+            self.Train_The_Model(0)
         elif data_processing_mode == "2":
         # Mode to evaluate model on validation and test data set
             self.Format_Data()
-            self.Evaluate_on_Train()
-            self.Evaluate_on_Test()
+            self.Evaluate_on_Test(0)
         elif data_processing_mode == "3":
         # Mode to generate the predictions from the training and validations 
             self.Estimate_the_Output()
@@ -93,42 +74,39 @@ class Model:
         self.test_data = self.train[50000:60000,:,:,:]
         self.test_labels = self.train_target[50000:60000]
 
-    def ModelDefinition(self):
+    def ModelDefinition(self, model_config):
         model = keras.Sequential()
         model.add(keras.layers.InputLayer(input_shape=(28,28,4)))
         model.add(keras.layers.BatchNormalization())
 
-        model.add(keras.layers.convolutional.Conv2D(filters=24, kernel_size = 3, data_format='channels_last',  padding='same',  activation='relu')) 
-        model.add(keras.layers.MaxPooling2D(pool_size=2))
-        model.add(keras.layers.Dropout(0.3))
+        model.add(keras.layers.convolutional.Conv2D(filters=model_config["layer1filters"], kernel_size = model_config["layer1kernel"], data_format='channels_last',  padding=model_config["layer1pad"],  activation='relu')) 
+        model.add(keras.layers.MaxPooling2D(pool_size=model_config["layer1pool"]))
+        model.add(keras.layers.Dropout(model_config["drop1"]))
         
-        model.add(keras.layers.Conv2D(filters=64, kernel_size = 3, padding='same', activation='relu'))
-        model.add(keras.layers.MaxPooling2D(pool_size=2))
-        model.add(keras.layers.Dropout(0.4))
-
-        #model.add(keras.layers.Conv2D(filters=64, kernel_size=3, padding='same', activation='relu'))
-        #model.add(keras.layers.MaxPooling2D(pool_size=2))
-        #model.add(keras.layers.Dropout(0.3))
-
+        model.add(keras.layers.convolutional.Conv2D(filters=model_config["layer2filters"], kernel_size = model_config["layer2kernel"], padding=model_config["layer2pad"],  activation='relu')) 
+        model.add(keras.layers.MaxPooling2D(pool_size=model_config["layer2pool"]))
+        model.add(keras.layers.Dropout(model_config["drop2"]))
+        
         model.add(keras.layers.Flatten())
         
-        model.add(keras.layers.Dense(128, activation='relu'))
-        model.add(keras.layers.Dropout(0.5))
-        model.add(keras.layers.Dense(128, activation='relu'))
+        model.add(keras.layers.Dense(model_config["layer1dense"], activation='relu'))
+        model.add(keras.layers.Dropout(model_config["drop3"]))
+        model.add(keras.layers.Dense(model_config["layer2dense"], activation='relu'))
         model.add(keras.layers.BatchNormalization())
 
         model.add(keras.layers.Dense(10, activation='softmax'))
         model.compile(optimizer=keras.optimizers.Adam(), loss= keras.losses.categorical_crossentropy, metrics=['accuracy'])
         return model
 
-    def Train_The_Model(self):
+    def Train_The_Model(self, model_index):
         histories = []
-        for i in range(0, self.total_iterations):
-            mo = self.ModelDefinition()
-            print('Model Summary for the current for the processed model')
+        model_config = self.md.model_definitions[model_index]
+        for i in range(0, model_config["iterations"]):
+            mo = self.ModelDefinition(model_config)
+            print('Model Summary for the model : %i and iteration - %i : ' % (model_index, i ))
             print(mo.summary())
-            print("Running for iteration: %i" % i)
-            filepath = self.dh.generate_iteration_model_file("fmnist_mo1", str(i))
+            print("Running for model# [%i] - iteration (%i): " % (model_index, i))
+            filepath = self.dh.generate_iteration_model_file("fmnist_model_%i_iteration_%i" % (model_index, i))
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
             train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.20, random_state=1001)
             
@@ -136,7 +114,10 @@ class Model:
             histories.append(hist.history)
 
         with open(self.history_pkl, 'wb') as f:
-            pickle.dump(histories, f)    
+            pickle.dump(histories, f) 
+        
+        print("Training Evaluation for model# [%i] - iteration (%i): " % (model_index, i))
+        self.Evaluate_on_Train()
 
     def Evaluate_on_Train(self):
         fileobj = open(self.history_pkl,'rb')
@@ -151,16 +132,17 @@ class Model:
            tmp.append(history[attrib][np.argmin(history['val_loss'])])
         return np.mean(tmp)
 
-    def Evaluate_on_Test(self):
+    def Evaluate_on_Test(self, model_index):
         test_loss = []
         test_accuracy = []
-        for i in range(0, self.total_iterations):
-            temp_cnn = self.ModelDefinition()
-            temp_cnn.load_weights(self.dh.get_iteration_model_file("fmnist_mo1", str(i)))
+        model_config = self.md.model_definitions[model_index]
+        for i in range(0, model_config["iterations"]):
+            temp_cnn = self.ModelDefinition(model_config)
+            temp_cnn.load_weights(self.dh.get_iteration_model_file("fmnist_model_%i_iteration_%i" % (model_index, i)))
             score = temp_cnn.evaluate(self.test_data, self.test_labels, verbose = 0)
             test_loss.append(score[0])
             test_accuracy.append(score[1])
-            print("Test with mode %i: %0.8f loss / %0.8f accuracy " %(i, score[0], score[1]))
+            print("Test with model# [%i] - iteration (%i): %0.8f loss / %0.8f accuracy " %(model_index, i, score[0], score[1]))
         # plt.imshow(self.train_data[1])
         # plt.show(block=True)
         # print(self.class_names[self.train_labels[1]])

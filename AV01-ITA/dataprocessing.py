@@ -25,8 +25,8 @@ class DataHelper:
         pass
    
 
-    def generate_iteration_model_file(self, model_prefix, iteration):
-        file_path = ops.abspath(self.__modelfolder + model_prefix+'_'+str(iteration)+".hdf5")
+    def generate_iteration_model_file(self, model_prefix):
+        file_path = ops.abspath(self.__modelfolder + model_prefix + ".hdf5")
         fileobj = open(file_path,'wb')
         fileobj.close()
         return file_path
@@ -36,8 +36,8 @@ class DataHelper:
         print(predDF.head(5))
         predDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
 
-    def get_iteration_model_file(self, model_prefix, iteration):
-        file_path = ops.abspath(self.__modelfolder + model_prefix+'_'+str(iteration)+".hdf5")
+    def get_iteration_model_file(self, model_prefix):
+        file_path = ops.abspath(self.__modelfolder + model_prefix + ".hdf5")
         return file_path
 
     def pickle_dump(self):

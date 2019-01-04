@@ -30,10 +30,12 @@ class DataHelper:
         fileobj = open(file_path,'wb')
         fileobj.close()
         return file_path
+
     def load_predictions(self, predictions):
-        predDF = pd.DataFrame(self.get_data("test"))
-        predDF["Predictions"]=predictions
-        print(predDF.head(5))
+        OrigDF = pd.DataFrame(self.get_data("test"))
+        predDF = pd.DataFrame(data = predictions)
+        mergeDF = pd.concat(OrigDF. predDF)
+        print(mergeDF.head(5))
         predDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
 
     def get_iteration_model_file(self, model_prefix):

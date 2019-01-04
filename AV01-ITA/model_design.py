@@ -26,11 +26,10 @@ class Model:
     _classes = {0: 'T-shirt/top', 1: 'Trouser', 2: 'Pullover', 3: 'Dress', 4: 'Coat',5: 'Sandal', 6: 'Shirt', 7: 'Sneaker', 8: 'Bag', 9: 'Ankle boot'}
     _num_classes = len(_classes)
 
-    _batch_size = 128
-    _epochs = 40
     _histories = []
     total_iterations = 1
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
+    predictions = {}
 
     def __init__(self, data_processing_mode):
         if data_processing_mode == "1":
@@ -135,6 +134,10 @@ class Model:
     def Evaluate_on_Test(self, model_index):
         test_loss = []
         test_accuracy = []
+        self.predictions = {}
+        # Grab the test data
+        self.test = np.array(self.dh.pickle_extract("test_images"))
+        self.test = self.test/255.0
         model_config = self.md.model_definitions[model_index]
         for i in range(0, model_config["iterations"]):
             temp_cnn = self.ModelDefinition(model_config)
@@ -143,22 +146,18 @@ class Model:
             test_loss.append(score[0])
             test_accuracy.append(score[1])
             print("Test with model# [%i] - iteration (%i): %0.8f loss / %0.8f accuracy " %(model_index, i, score[0], score[1]))
+        
+            print("Capture predictions for model# [%i] - iteration (%i) Test Data. " %(model_index, i))
+            p = temp_cnn.predict(self.test, verbose=0)
+            p = np.argmax(p,axis=1)
+            self.predictions[("model%iiteration%i" % (model_index, i))] = p
+
+        
         # plt.imshow(self.train_data[1])
         # plt.show(block=True)
         # print(self.class_names[self.train_labels[1]])
         print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))
 
     def Estimate_the_Output(self):
-        self.test = np.array(self.dh.pickle_extract("test_images"))
-        self.test = self.test/255.0
-        test_results = []
-        for i in range(0, self.total_iterations):
-            temp_cnn = self.ModelDefinition()
-            temp_cnn.load_weights(self.dh.get_iteration_model_file("fmnist_mo1", str(i)))
-            predictions = temp_cnn.predict(self.test, verbose=0)
-            predictions = np.argmax(predictions,axis=1)
-            test_results.append(predictions)
-        #counter = np.bincount(np.array(test_results), axis=0).argmax()
-        #print(np.array(test_results))
-        self.dh.load_predictions(test_results[0])
+        self.dh.load_predictions(self.predictions)
             

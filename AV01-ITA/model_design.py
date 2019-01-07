@@ -27,7 +27,6 @@ class Model:
     _num_classes = len(_classes)
 
     _histories = []
-    total_iterations = 1
     history_pkl = './data/mo_hist/fashion_mnist-history.pkl'
     predictions = {}
 
@@ -36,12 +35,16 @@ class Model:
            self.ProcessData()
            self.data_store = self.ShowDataStore()
         elif data_processing_mode == "0":
-            self.Format_Data()
-            self.Train_The_Model(0)
+            for i in range(0, len(self.md.model_definitions)):
+                self.Format_Data()
+                self.Train_The_Model(i)
         elif data_processing_mode == "2":
         # Mode to evaluate model on validation and test data set
-            self.Format_Data()
-            self.Evaluate_on_Test(0)
+            self.predictions = {}
+            for i in range(0, len(self.md.model_definitions)):
+                self.Format_Data()
+                self.Evaluate_on_Test(i)
+            self.dh.load_predictions(self.predictions)
         elif data_processing_mode == "3":
         # Mode to generate the predictions from the training and validations 
             self.Estimate_the_Output()
@@ -134,7 +137,6 @@ class Model:
     def Evaluate_on_Test(self, model_index):
         test_loss = []
         test_accuracy = []
-        self.predictions = {}
         # Grab the test data
         self.test = np.array(self.dh.pickle_extract("test_images"))
         self.test = self.test/255.0
@@ -150,16 +152,12 @@ class Model:
             print("Capture predictions for model# [%i] - iteration (%i) Test Data. " %(model_index, i))
             p = temp_cnn.predict(self.test, verbose=0)
             p = np.argmax(p,axis=1)
-            print(p)
             self.predictions[("model%iiteration%i" % (model_index, i))] = p
 
-        
-        # plt.imshow(self.train_data[1])
-        # plt.show(block=True)
-        # print(self.class_names[self.train_labels[1]])
-        print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))
-        print(self.predictions)
-        self.dh.load_predictions(self.predictions)
+        ## plt.imshow(self.train_data[1])
+        ## plt.show(block=True)
+        ## print(self.class_names[self.train_labels[1]])
+        #print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))
 
 
     #def Estimate_the_Output(self):

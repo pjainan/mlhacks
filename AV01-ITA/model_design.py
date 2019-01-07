@@ -109,7 +109,7 @@ class Model:
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
             train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.20, random_state=1001)
             
-            hist = mo.fit(train_x,train_y, epochs=self._epochs, batch_size=self._batch_size, validation_data=(val_x, val_y), callbacks=[checkpoint])
+            hist = mo.fit(train_x,train_y, epochs=model_config["epochs"], batch_size=model_config["batch_size"], validation_data=(val_x, val_y), callbacks=[checkpoint])
             histories.append(hist.history)
 
         with open(self.history_pkl, 'wb') as f:
@@ -150,6 +150,7 @@ class Model:
             print("Capture predictions for model# [%i] - iteration (%i) Test Data. " %(model_index, i))
             p = temp_cnn.predict(self.test, verbose=0)
             p = np.argmax(p,axis=1)
+            print(p)
             self.predictions[("model%iiteration%i" % (model_index, i))] = p
 
         
@@ -157,7 +158,10 @@ class Model:
         # plt.show(block=True)
         # print(self.class_names[self.train_labels[1]])
         print('\n Avg test loss/accuracy : \t %0.4f /  %0.4f' % (np.mean(test_loss), np.mean(test_accuracy)))
-
-    def Estimate_the_Output(self):
+        print(self.predictions)
         self.dh.load_predictions(self.predictions)
+
+
+    #def Estimate_the_Output(self):
+        #self.dh.load_predictions(self.predictions)
             

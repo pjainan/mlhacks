@@ -31,12 +31,14 @@ class DataHelper:
         fileobj.close()
         return file_path
 
-    def load_predictions(self, predictions):
+    def load_predictions(self, preds):
         OrigDF = pd.DataFrame(self.get_data("test"))
-        predDF = pd.DataFrame(data = predictions)
-        mergeDF = pd.concat(OrigDF. predDF)
+        print(OrigDF.head(2))
+        predDF = pd.DataFrame.from_dict(data = preds, orient='index').transpose()
+        print(predDF.head(3))
+        mergeDF = pd.concat([OrigDF, predDF], axis=1, sort=false)
         print(mergeDF.head(5))
-        predDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
+        #mergeDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
 
     def get_iteration_model_file(self, model_prefix):
         file_path = ops.abspath(self.__modelfolder + model_prefix + ".hdf5")

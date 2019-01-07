@@ -5,7 +5,7 @@ class ModelDefinition:
     model_definitions = {
         0:{
             "batch_size" : 128,
-            "epochs": 10,
+            "epochs": 5,
             "iterations" : 1,
             "layer1kernel" : 3,
             "layer2kernel" :3,

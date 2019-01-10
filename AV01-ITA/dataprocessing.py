@@ -23,7 +23,9 @@ class DataHelper:
 
     def __init__(self):
         pass
-   
+    def textlogger(self, text):
+        with open('log_file.txt', 'a') as the_file:
+            the_file.write('%s\n' % text)
 
     def generate_iteration_model_file(self, model_prefix):
         file_path = ops.abspath(self.__modelfolder + model_prefix + ".hdf5")

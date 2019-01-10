@@ -35,6 +35,7 @@ class Model:
            self.ProcessData()
            self.data_store = self.ShowDataStore()
         elif data_processing_mode == "0":
+            self.dh.textlogger("Start Model Training")
             for i in range(0, len(self.md.model_definitions)):
                 self.Format_Data()
                 self.Train_The_Model(i)
@@ -105,9 +106,12 @@ class Model:
         model_config = self.md.model_definitions[model_index]
         for i in range(0, model_config["iterations"]):
             mo = self.ModelDefinition(model_config)
+            self.dh.textlogger('Model Summary for the model : %i and iteration - %i : ' % (model_index, i ))
             print('Model Summary for the model : %i and iteration - %i : ' % (model_index, i ))
             print(mo.summary())
+            mo.summary(print_fn=self.dh.textlogger)
             print("Running for model# [%i] - iteration (%i): " % (model_index, i))
+            self.dh.textlogger("Running for model# [%i] - iteration (%i): " % (model_index, i))
             filepath = self.dh.generate_iteration_model_file("fmnist_model_%i_iteration_%i" % (model_index, i))
             checkpoint = keras.callbacks.ModelCheckpoint(filepath,monitor='val_loss', save_best_only=True,mode='min')
             train_x, val_x, train_y, val_y = sklearn.model_selection.train_test_split(self.train_data, self.train_labels, test_size=0.20, random_state=1001)
@@ -119,6 +123,7 @@ class Model:
             pickle.dump(histories, f) 
         
         print("Training Evaluation for model# [%i] - iteration (%i): " % (model_index, i))
+        self.dh.textlogger("Training Evaluation for model# [%i] - iteration (%i): " % (model_index, i))
         self.Evaluate_on_Train()
 
     def Evaluate_on_Train(self):
@@ -127,6 +132,8 @@ class Model:
         fileobj.close()
         print('Training: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'loss'), self.Get_Training_History_Average(histories, 'acc')))
         print('Validation: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'val_loss'), self.Get_Training_History_Average(histories, 'val_acc')))
+        self.dh.textlogger('Training: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'loss'), self.Get_Training_History_Average(histories, 'acc')))
+        self.dh.textlogger('Validation: \t%0.8f loss / %0.8f acc' % (self.Get_Training_History_Average(histories, 'val_loss'), self.Get_Training_History_Average(histories, 'val_acc')))
 
     def Get_Training_History_Average(self,histories,attrib):
         tmp = []

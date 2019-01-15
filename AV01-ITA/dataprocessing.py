@@ -35,10 +35,11 @@ class DataHelper:
 
     def load_predictions(self, preds):
         OrigDF = pd.DataFrame(self.get_data("test"))
-        predDF = pd.DataFrame.from_dict(data = preds, orient='index').transpose().mode(axis=1)[0]
+        predDF = (pd.DataFrame.from_dict(data = preds, orient='index').transpose().mode(axis=1)[0]).astype(int)
         mergeDF = pd.concat([OrigDF["id"], predDF], axis=1, sort=False)
-        print(mergeDF.head(100))
-        #mergeDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
+        mergeDF.columns = ["id", "label"]
+        #print(mergeDF.head(10))
+        mergeDF.to_csv(ops.abspath(self.__datafolder + self.__testfile + self.__file_ext), index = None, header = True)
 
     def get_iteration_model_file(self, model_prefix):
         file_path = ops.abspath(self.__modelfolder + model_prefix + ".hdf5")
